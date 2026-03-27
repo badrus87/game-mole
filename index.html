@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whack A Mole Pro</title>
+
+<style>
+body {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom, #1e1e2f, #3a3a5f);
+  color: white;
+}
+
+h1 { margin-top: 10px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.hole {
+  width: 100px;
+  height: 100px;
+  background: #444;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.mole {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background: brown;
+  border-radius: 50%;
+  bottom: -80px;
+  left: 10px;
+  transition: 0.2s;
+}
+
+.hole.active .mole {
+  bottom: 10px;
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #ff9800;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Whack A Mole Pro</h1>
+<h2>Score: <span id="score">0</span></h2>
+<h3>Time: <span id="time">30</span>s</h3>
+<h3>Level: <span id="level">1</span></h3>
+
+<div class="grid" id="grid"></div>
+<button onclick="startGame()">Start Game</button>
+
+<audio id="hitSound" src="https://www.soundjay.com/button/button-16.mp3"></audio>
+
+<script>
+const grid = document.getElementById("grid");
+const scoreEl = document.getElementById("score");
+const timeEl = document.getElementById("time");
+const levelEl = document.getElementById("level");
+const hitSound = document.getElementById("hitSound");
+
+let holes = [];
+let score = 0;
+let time = 30;
+let level = 1;
+let gameInterval;
+let moleSpeed = 800;
+
+// buat grid
+for (let i = 0; i < 9; i++) {
+  const hole = document.createElement("div");
+  hole.classList.add("hole");
+
+  const mole = document.createElement("div");
+  mole.classList.add("mole");
+
+  hole.appendChild(mole);
+
+  hole.addEventListener("click", () => {
+    if (hole.classList.contains("active")) {
+      score++;
+      scoreEl.textContent = score;
+      hitSound.play();
+      hole.classList.remove("active");
+
+      // naik level tiap 10 poin
+      if (score % 10 === 0) {
+        level++;
+        levelEl.textContent = level;
+        moleSpeed = Math.max(300, moleSpeed - 100);
+        restartMoleLoop();
+      }
+    }
+  });
+
+  grid.appendChild(hole);
+  holes.push(hole);
+}
+
+function randomMole() {
+  holes.forEach(h => h.classList.remove("active"));
+  const index = Math.floor(Math.random() * holes.length);
+  holes[index].classList.add("active");
+}
+
+function startGame() {
+  score = 0;
+  time = 30;
+  level = 1;
+  moleSpeed = 800;
+
+  scoreEl.textContent = score;
+  timeEl.textContent = time;
+  levelEl.textContent = level;
+
+  restartMoleLoop();
+
+  clearInterval(gameInterval);
+  gameInterval = setInterval(() => {
+    time--;
+    timeEl.textContent = time;
+
+    if (time <= 0) {
+      clearInterval(gameInterval);
+      clearInterval(moleLoop);
+      alert("Game Over! Score: " + score);
+    }
+  }, 1000);
+}
+
+let moleLoop;
+function restartMoleLoop() {
+  clearInterval(moleLoop);
+  moleLoop = setInterval(randomMole, moleSpeed);
+}
+</script>
+
+</body>
+</html>
